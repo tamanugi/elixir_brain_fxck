@@ -3,6 +3,18 @@ defmodule ElixirBrainFxck do
   Documentation for ElixirBrainFxck.
   """
 
+  alias ElixirBrainFxck.Memory
+
+  @opertors [
+    "+",
+    "-",
+    ">",
+    "<",
+    "[",
+    "]",
+    "."
+  ]
+
   @doc """
   Brain Fxxk!!!.
 
@@ -16,44 +28,38 @@ defmodule ElixirBrainFxck do
       [2, 1]
       iex> ElixirBrainFxck.bf "++.>+.<."
       [2, 1, 2]
+      iex> ElixirBrainFxck.bf "+++[>++++<-]>."
+      [12]
 
   """
-  def bf (code) do
-    ops = String.graphemes(code)
+  def bf(code) do
+    Memory.start_link
+    Memory.init()
 
-    process({[0], 0, []}, ops)
+    code
+    |> String.graphemes
+    |> Enum.filter(fn x -> Enum.member?(@opertors, x) end)
+    |> process
   end
 
-  def process({memory, pointer, outputs} , []) do
-    IO.inspect outputs
-    outputs
+  def process([]) do
+    Memory.flush()
   end
 
-  def process({memory, pointer, outputs} , [h|tail]) do
-    bf_main({memory, pointer, outputs}, h)
-    |> process(tail)
-  end
-
-  def bf_main({memory, pointer, outputs}, op) do
+  def process([op | tail]) do
     case op do
       ">" -> 
-        pointer_ = pointer + 1
-        memory_ = case List.pop_at(memory, pointer_) do
-          {nil, _} -> memory ++ [0]
-          _ -> memory
-        end
-        {memory_, pointer_, outputs}
+        Memory.right()
       "<" -> 
-        {memory, pointer - 1, outputs}
+        Memory.left()
       "+" -> 
-        memory_ = List.update_at(memory, pointer, &(&1 + 1))
-        {memory_, pointer, outputs}
+        Memory.incr()
       "-" -> 
-        memory_ = List.update_at(memory, pointer, &(&1 - 1))
-        {memory_, pointer, outputs}
+        Memory.decr()
       "." -> 
-        {target, _} = List.pop_at(memory, pointer)
-        {memory, pointer, outputs ++ [target]}
+        Memory.output()
     end
+
+    process(tail)
   end
 end
