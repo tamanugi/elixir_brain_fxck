@@ -11,6 +11,12 @@ defmodule ElixirBrainFxck.Memory do
     Agent.start_link(fn -> %Tape{} end, name: __MODULE__)
   end
 
+  def read do
+    Agent.get(__MODULE__, fn %Tape{cells: cells, head: head} ->
+      Enum.at(cells, head)
+    end)
+  end
+
   def get do
     Agent.get(__MODULE__, &(&1))
   end

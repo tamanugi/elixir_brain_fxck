@@ -2,7 +2,6 @@ defmodule ElixirBrainFxckTest do
   use ExUnit.Case
   doctest ElixirBrainFxck
 
-  test "greets the world" do
-    assert ElixirBrainFxck.hello() == :world
+  test "test1" do
   end
 end

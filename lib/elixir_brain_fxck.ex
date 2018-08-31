@@ -36,30 +36,50 @@ defmodule ElixirBrainFxck do
     Memory.start_link
     Memory.init()
 
-    code
+    op_list = code
     |> String.graphemes
     |> Enum.filter(fn x -> Enum.member?(@opertors, x) end)
-    |> process
+
+    process({op_list, 0})
   end
 
-  def process([]) do
-    Memory.flush()
-  end
-
-  def process([op | tail]) do
-    case op do
-      ">" -> 
-        Memory.right()
-      "<" -> 
-        Memory.left()
-      "+" -> 
-        Memory.incr()
-      "-" -> 
-        Memory.decr()
-      "." -> 
-        Memory.output()
+  def process({op_list, op_head})  do
+    case Enum.at(op_list, op_head) |> operation({op_list, op_head}) do
+      {:ok, op} -> process(op)
+      :end -> Memory.flush
     end
+  end
 
-    process(tail)
+  def operation(">", {op_list, op_head}) do
+    Memory.right()
+    {:ok, {op_list, op_head + 1}}
+  end
+
+  def operation("<", {op_list, op_head}) do
+    Memory.left()
+    {:ok, {op_list, op_head + 1}}
+  end
+
+  def operation("+", {op_list, op_head}) do
+    Memory.incr()
+    {:ok, {op_list, op_head + 1}}
+  end
+
+  def operation("-", {op_list, op_head}) do
+    Memory.decr()
+    {:ok, {op_list, op_head + 1}}
+  end
+
+  def operation(".", {op_list, op_head}) do
+    Memory.output()
+    {:ok, {op_list, op_head + 1}}
+  end
+
+  def operation("[", {op_list, op_head}) do
+    {:ok, {op_list, op_head + 1}}
+  end
+
+  def operation(_, _) do
+    :end
   end
 end
